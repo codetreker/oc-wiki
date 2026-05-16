@@ -42,7 +42,7 @@ Borgee 已经把多 agent 协作里的问题暴露得很清楚：任务会等，
 
 当我把 Borgee 拿掉以后，Blueprintflow 才第一次变成一个可以被安装、解释、迁移的东西。它不再只是某个项目里的 `.claude/skills`，而是一套可复用的 workflow skills。
 
-不过那时我还没有把它想成“通用工作流模型”。
+不过那时我没有想得太远。
 
 我当时的理解更窄：这是从真实项目里跑通的一套产品工程多 agent 协作流程。它能跨项目，但核心场景仍然是产品工程。
 
@@ -182,7 +182,7 @@ runtime-adapter 的出现，对我来说是一个分水岭。
 
 这一步把 Blueprintflow 从“Claude Code skills”推向了“跨 agent runtime 的方法论”。
 
-它也埋下了一个更大的问题：如果核心规则应该独立于运行时，那它到底应该只是 skill 文本，还是应该有更明确的 flow contract 和 runtime adapter？
+它也埋下了一个问题：如果核心规则应该独立于运行时，那 skill 文本到底应该承担多少？哪些是流程规则，哪些只是某个工具里的执行方式？
 
 这个问题一直留到了今天。
 
@@ -198,11 +198,11 @@ runtime-adapter 的出现，对我来说是一个分水岭。
 
 也正是这条线，最后把今天的问题暴露出来：public skill 太多，入口太散。
 
-如果每个子 skill 都要提醒自己“我是 Blueprintflow 的一部分”，那说明它们不该被当成同级 public entrypoint。用户要推进的是一个 work object，不是手动选择某个内部阶段。
+如果每个子 skill 都要提醒自己“我是 Blueprintflow 的一部分”，那说明这些阶段性 skill 被暴露得太靠前了。用户安装后不应该先面对一排内部阶段，然后自己判断该从哪里进。
 
 所以这条来路和今天的讨论是接上的。
 
-我先从 Borgee 工地里把 skills 拆出来；后来把它做成可复用 workflow；再后来把它推向 marketplace；marketplace 又逼我重新看 public surface；public surface 的问题最后把我带到一个更大的判断：Blueprintflow 到底是一堆 skills，还是一个能够判断、路由和验收的 flow runner？
+我先从 Borgee 工地里把 skills 拆出来；后来把它做成可复用 workflow；再后来把它推向 marketplace；marketplace 又逼我重新看 public surface：用户到底应该看到什么入口？哪些东西应该留在内部？
 
 ## 我今天真正继承下来的东西
 
@@ -218,7 +218,8 @@ runtime-adapter 的出现，对我来说是一个分水岭。
 
 这就是为什么我现在能继续往前推。
 
-如果没有 Borgee 里的实际工地，Blueprintflow 只会是一套漂亮流程图。如果没有后来的 marketplace、runtime adapter、current/next/tasks、task PR atom 和 Teamlead drive，它也不会积累出足够多的结构，去支撑“BF 可能是一种通用工作流模型”这个新判断。
+如果没有 Borgee 里的实际工地，Blueprintflow 只会是一套漂亮流程图。如果没有后来的 marketplace、runtime adapter、current/next/tasks、task PR atom 和 Teamlead drive，它也不会积累出这么多真实结构。
 
-下一篇讲的就是这个新判断：我怎么意识到 Blueprintflow 不只是产品工程流程，而是可以扩展成通用的 evidence-gated work loop。
+这篇先停在这里：Blueprintflow 是怎么从 Borgee 里的现场经验，变成一套产品工程协作协议的。
 
+下一篇再讲后来发生的那次认知变化：为什么我开始觉得，它可能不只是产品工程流程。
