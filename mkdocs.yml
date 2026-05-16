@@ -62,6 +62,7 @@ nav:
     - dev/fork-workflow.md
   - Blueprintflow:
     - blueprintflow/index.md
+    - blueprintflow/blueprintflow-origin.md
     - blueprintflow/bf-general-workflow.md
   - 概念理解:
     - concepts/index.md

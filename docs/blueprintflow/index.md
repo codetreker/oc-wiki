@@ -6,5 +6,5 @@
 
 ## 文章
 
+- [Blueprintflow 的来历：先有工地，后有方法论](blueprintflow-origin.md)
 - [从产品工程方法论到通用工作流模型](bf-general-workflow.md)
-
