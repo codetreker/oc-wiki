@@ -1,35 +1,152 @@
-# Blueprintflow：从产品工程方法论到通用工作流模型
+# Blueprintflow：我们是怎么发现它不只是产品工程流程的
 
-## 这次认知变化
+## 那句重复出现的 guard
 
-一开始我们把 Blueprintflow 理解成一套产品工程治理方法论：从模糊 idea 到 blueprint，再到 Phase、Milestone、Task、PR、验收和 current promotion。
+最早让人不舒服的，不是某个大理论。
 
-这个理解没有错，但它太窄了。今天讨论里更重要的发现是：Blueprintflow 背后的模式并不只属于产品工程。它本质上是一种通用的、递归的、证据驱动的工作推进模型。
+是 Blueprintflow 的每个子 skill 里都有类似一句话：如果入口没有激活，就先回到入口。
 
-可以把它概括成：
+这句话本来是保护机制。它防止 agent 直接跳进某个中间阶段，绕过 Teamlead、runtime、role boundary 和状态检查。但当二十多个 skill 都需要写同一类 guard 时，问题就不只是“文档有点啰嗦”了。
+
+重复的 guard 在提醒我们：这些子 skill 不该是 public 入口。
+
+用户并不关心自己该调用 `bf-phase-plan`、`bf-task-execute`，还是 `bf-milestone-progress`。用户关心的是：这个 issue 该往哪走？这个 idea 怎么变成可执行对象？这个 task 离 accepted 还差什么？
+
+也就是说，用户要推进的是一个对象，不是一个 skill。
+
+这是第一个转变：
+
+> Blueprintflow 的入口不应该是一排 skill，而应该是一个能判断下一步的 flow runner。
+
+这个判断还很保守。它只是在说：把 public surface 收干净，把内部阶段藏起来。但它已经把我们带离了原来的问题。原来的问题是“怎么让每个 skill 更清楚”；新的问题是“谁来判断当前对象该进入哪个流程”。
+
+## OPC 把问题照亮了
+
+讨论 OPC 时，真正有价值的不是“OPC 也有很多 agent”。
+
+OPC 有一个更硬的东西：它把流程变成了可执行结构。它有 flow graph、node、gate、loop、state、review independence 和 mechanical verdict。
+
+这让 Blueprintflow 的弱点变得清楚。
+
+Blueprintflow 现在很多规则靠文字和 Teamlead 纪律维持：读哪些文档、派哪些角色、什么时候验收、什么时候推进。这个模型可以跑，但它对上下文和自律要求很高。一旦状态不清、证据松动、角色边界混掉，流程就会漂移。
+
+OPC 让我们换了一个问法。
 
 ```text
-输入一个模糊或未完成的工作对象
--> 明确边界
--> 拆成可执行步骤
--> 产出 artifacts
--> 独立验证
--> gate 决定通过、迭代或失败
--> 写回 ledger
--> 路由到下一个状态或下一个对象
+不是：这个阶段的说明够不够详细？
+而是：这个阶段的输入、产出、gate 和状态迁移是什么？
 ```
 
-这意味着 Blueprintflow 不应该只被定义为“软件产品开发流程”。它可以更抽象地定义为：
+这一步很关键。它把 Blueprintflow 从“说明书”推向“状态机”。
 
-> BF 用产出物、独立验证、闸门和状态账本，把不确定的工作对象推进为可验收的状态迁移。
+流程不是一串建议。流程应该回答：当前对象在哪里，下一步要产出什么，谁来验证，gate 如何判定，通过后状态写到哪里。
 
-## 两类输入
+没有这些东西，流程说明再长，也只是在要求 agent 自觉。
 
-BF 的入口有两种输入。
+## 我们随后发现，两套东西有同一个骨架
 
-第一种是 **Raw Input**：模糊意图，还不能直接执行。
+OPC 的典型循环很简单：
 
-例如：
+```text
+task
+-> select flow
+-> build / review / test
+-> gate
+-> iterate or finish
+```
+
+Blueprintflow 的产品工程循环看起来更复杂：
+
+```text
+idea / issue
+-> blueprint / phase / milestone / task
+-> implementation / verification / PR review
+-> acceptance
+-> current promotion
+```
+
+但把名字拿掉，骨架几乎一样。
+
+都是先处理输入，把它变成可执行对象；再产出 artifacts；再让独立角色验证；最后由 gate 决定状态是否推进。失败或不充分就回去迭代，通过就进入下一个状态。
+
+这时，Blueprintflow 的产品工程词汇开始退到第二层。
+
+Phase、Milestone、Task、PR 仍然重要，但它们不再是 BF 的本体。它们只是产品工程这个领域里的对象类型。
+
+BF 真正的本体更像这样：
+
+```text
+work object
+-> artifacts
+-> independent verification
+-> gate
+-> ledger transition
+```
+
+这个转变比“把多个 skill 合成一个入口”大得多。它意味着 BF 不是某套产品开发步骤，而是一种处理不确定工作的方式。
+
+## 真正的转折：每个 flow 都是一个小 BF
+
+接下来发生了最重要的一步。
+
+我们发现 Blueprintflow 不是一条从 idea 到 current 的长流程。它由很多形状相同的小流程组成。
+
+Issue triage 是一个小 BF。输入是 issue，产出是分类、路由和 trace。
+
+Brainstorm 是一个小 BF。输入是模糊 idea，产出是边界、立场和结构化对象。
+
+Milestone breakdown 是一个小 BF。输入是 selected milestone，产出是 task boundary 和 reviewed `task.md`。
+
+Task execution 是一个小 BF。输入是 reviewed `task.md`，产出是 four-piece、design、code、tests、PR 和 acceptance evidence。
+
+Phase exit 也是一个小 BF。输入是 accepted milestones，产出是 closure evidence、signoff 和 promotion readiness。
+
+这些流程做的事不同，但形状相同：
+
+```text
+input
+-> clarify or decompose
+-> produce artifacts
+-> verify independently
+-> gate
+-> update ledger
+-> route the next object
+```
+
+这改变了我们对 Blueprintflow 的理解。
+
+它不是一条主线，而是一种递归模式。一个大对象可以拆成小对象；一个流程的输出可以成为另一个流程的输入。BF 可以向内拆，也可以向外扩。
+
+## 产品工程只是第一个 pack
+
+一旦看到这个递归模式，产品工程就不再是边界。
+
+研究也可以这样跑：问题进入，形成假设，设计实验，收集证据，得出结论。
+
+事故处理也可以这样跑：alert 进入，诊断影响，制定止血动作，验证恢复，写 postmortem。
+
+内容生产也可以这样跑：idea 进入，形成 brief，写 draft，review，publish。
+
+决策也可以这样跑：problem 进入，列 options，做 tradeoff review，写 decision record。
+
+这不是说“万物皆流程”。BF 有边界。只有能被表示成对象、状态、产出物、验收标准、gate 和 ledger 的工作，才适合进入 BF。
+
+但这个边界明显不止产品工程。
+
+所以更准确的说法是：
+
+```text
+BF Core = 通用的 evidence-gated work loop
+Product Engineering = BF 的第一个 pack
+```
+
+原来的 Blueprintflow 没有被推翻。它被降级了：从“整个方法论本身”，变成“这个通用模型在产品工程里的一个实例”。
+
+## Raw Input 不能直接执行
+
+这个新理解带出一个基础区分：BF 的输入有两类。
+
+第一类是 Raw Input。它是模糊意图，还不能执行。
 
 ```text
 我们要优化 onboarding
@@ -38,125 +155,93 @@ BF 的入口有两种输入。
 用户反馈支付流程很乱
 ```
 
-Raw Input 需要先经过 brainstorming。这里的 brainstorming 不是随便聊天，而是 shaping flow：它把模糊输入塑形成结构化的 Work Object。
+这类输入不能直接进入执行循环。它必须先经过 shaping。
 
-第二种是 **Work Object**：已经结构化，可以被 BF flow 驱动。
+在产品工程里，这个 shaping 叫 brainstorm、triage 或 blueprint write。在研究里，它可能是定义研究问题和假设。在事故处理中，它可能是确认影响范围和止血目标。
 
-一个 Work Object 至少应该说明：
+名字可以不同，职责一样：把 Raw Input 塑造成 Work Object。
 
-- objective：要推进什么
-- context：为什么现在要做
-- boundary：做什么、不做什么
-- desired state：希望推进到哪里
-- acceptance criteria：怎么判断成功
-- expected artifacts：应该留下什么产出物或证据
-- constraints / risks：关键限制和红线
-- next flow：接下来进入哪个流程
+第二类是 Work Object。它已经有边界，可以被推进。
 
-所以入口模型是：
+一个 Work Object 至少要回答：
+
+- 要推进什么？
+- 为什么现在要做？
+- 做什么，不做什么？
+- 要推进到哪个状态？
+- 怎么判断成功？
+- 需要留下什么证据？
+- 哪些限制不能破？
+- 通过后进入哪个流程？
+
+所以 BF 的入口不是“收到需求就执行”。BF 的入口应该先判断：这是一段 Raw Input，还是一个已经成形的 Work Object？
 
 ```text
 Raw Input
--> domain brainstorming
+-> domain shaping
 -> Work Object
 -> execution / verification / transition flow
 ```
 
-## 不同领域有不同的 brainstorming
+这是整个模型里最容易被低估的一点。很多失败的执行，不是实现能力不够，而是 Raw Input 被当成 Work Object 直接执行了。
 
-Brainstorming 不是一个固定流程，而是一类 domain-specific shaping flow。
+## 新定义
 
-BF Core 只规定：Raw Input 必须被塑形成满足 Work Object contract 的结构化对象。但不同业务领域会有不同的问题、角色和产出物。
+经过这轮讨论，Blueprintflow 可以重新定义为：
 
-例如：
+> BF 用产出物、独立验证、闸门和状态账本，把不确定的工作对象推进为可验收的状态迁移。
 
-| 领域 | Brainstorming 关注点 | 可能产出 |
-|---|---|---|
-| Engineering | 用户价值、技术边界、模块影响、v0/v1、验收方式、PR 粒度 | blueprint anchor、milestone、task.md |
-| Research | 研究问题、假设、变量、数据来源、评价方法、反证条件 | research work object、experiment plan |
-| Incident | 影响范围、症状、时间线、假设、止血目标、验证信号 | incident work object、mitigation plan |
-| Content | 受众、主张、渠道、语气、结构、成功指标 | content brief |
-| Decision | 问题、选项、取舍、不可接受结果、决策证据 | decision record |
+更短一点：
 
-因此，Blueprintflow 的产品工程流程只是一个 pack，不是 BF 的全部。
+> BF 是通用的 evidence-gated work loop。
 
-## 每个 flow 都是一个小 BF
-
-另一个关键发现是：BF 不是一条超长线性流程，而是很多同构 flow 的组合。
-
-每个 flow 都遵循类似结构：
+在这个定义下，BF Core 关心的是通用 contract：
 
 ```text
-input
--> decide / decompose
--> produce artifacts
--> review / verify
--> update ledger
--> route next flow
+Work Object
+Artifact
+Acceptance Criteria
+Gate
+Ledger
+Route
 ```
 
-产品工程里的几个流程都可以看成小 BF：
-
-| Flow | Input | Output / State |
-|---|---|---|
-| Issue triage | GitHub issue | 分类、路由、trace |
-| Brainstorm | fuzzy idea / conflict | stance、boundary、Work Object |
-| Iteration planning | selected issues / next anchors | Phase、Milestone |
-| Milestone breakdown | selected milestone | task boundary、task.md |
-| Task execution | reviewed task.md | PR、evidence、accepted task |
-| Phase exit | accepted milestones | closure evidence、promotion readiness |
-| Current promotion | accepted scope | current truth |
-
-这说明 BF 的本体不是某条固定流程，而是一个可递归复用的 flow pattern。
-
-## BF Core 与 Packs
-
-更清晰的分层应该是：
+Product Engineering Pack 才关心具体领域词汇：
 
 ```text
-BF Core
-  通用 work object / artifact / criteria / gate / ledger / route 模型
-
-BF Packs
-  某个领域对 BF Core 的实例化
+issue
+idea
+blueprint
+phase
+milestone
+task
+PR
+current promotion
 ```
 
-当前 Blueprintflow 可以被视为第一个 pack：
+未来可以有 Research Pack、Incident Pack、Content Pack、Decision Pack 和 Operations Pack。它们不需要共享同一套领域词汇，但必须共享同一个 BF Core contract。
+
+## 这次真正改变了什么
+
+这次讨论真正改变的不是目录结构，也不是工具选择。
+
+它改变的是我们问问题的方式。
+
+以前我们会问：还缺哪个 skill？哪个阶段的说明不够？入口怎么命名？
+
+现在应该问：
 
 ```text
-product-engineering pack
-  issue / idea / blueprint / phase / milestone / task / PR / current promotion
+这个 Work Object 是什么？
+它现在处于什么状态？
+需要产出什么 artifact？
+谁来独立验证？
+gate 怎么判断？
+状态写到哪里？
+通过后路由到哪个对象或流程？
 ```
 
-未来还可以有：
+这组问题才是 BF 的核心。
 
-```text
-research pack
-incident pack
-content pack
-decision pack
-operations pack
-```
-
-这样，BF 既保留了 Blueprintflow 在产品工程里的经验，又不再被产品工程语境限制。
-
-## 核心公理草案
-
-这次讨论沉淀出的 BF 公理可以先记为：
-
-1. BF 不直接执行 Raw Input；Raw Input 必须先被塑形成 Work Object。
-2. Work Object 是 BF 推进的基本单位。
-3. 每次状态推进必须有 artifact 或 evidence。
-4. Producer 不能独自验收自己的产出。
-5. Gate 决定 route：PASS、ITERATE、FAIL 或升级人工决策。
-6. 状态必须写入 ledger，便于恢复、审计和交接。
-7. 一个 flow 完成后，结果可以成为下一层 flow 的输入。
-
-## 为什么重要
-
-这个认知变化很重要，因为它把 Blueprintflow 从“产品工程流程集合”提升成了“通用工作状态迁移模型”。
-
-这会影响后续所有设计：入口不只是选择某个 skill，而是运行某个 flow；产品工程不是唯一场景，而是一个 pack；brainstorming 也不是闲聊，而是 Raw Input 到 Work Object 的 shaping flow。
-
-后续具体怎么实现、是否复用某个现有 runtime、目录怎么改，都应该建立在这个概念转变之上。
+产品工程只是第一个场景。真正被发现的东西，是一套把不确定工作推进为可验收事实的通用模式。
 
