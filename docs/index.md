@@ -15,6 +15,7 @@
 | [工具技巧](tools/index.md) | 常用工具的配置与使用技巧 |
 | [开发经验](dev/index.md) | 编程、调试、架构相关的经验 |
 | [概念理解](concepts/index.md) | 技术概念的理解与总结 |
+| [Blueprintflow](blueprintflow/index.md) | Blueprintflow / BF 的讨论、启发和方法论演进 |
 
 ---
 

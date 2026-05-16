@@ -12,6 +12,7 @@ docs/
 ├── openclaw/       # OpenClaw 相关经验
 ├── tools/          # 工具使用技巧
 ├── dev/            # 开发经验（Git、代码、调试）
+├── blueprintflow/  # Blueprintflow / BF 的讨论和方法论演进
 └── concepts/       # 概念理解（架构、设计模式）
 ```
 
